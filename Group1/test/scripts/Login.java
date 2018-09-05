@@ -13,20 +13,28 @@ public class Login {
 	@BeforeTest
 	public void setUp() {
 
-		pom = new LoginPOM(driver, "firefox");
+		pom = new LoginPOM(driver, "chrome");
 
 	}
 
 	@Test
 	public void login() {
-		driver= pom.login();
+		/*driver= */pom.login();
 
 	}
 
+	@Test
+	public void logout(){
+		
+		/*driver=*/ pom.logout();
+		
+	}
+	
+	
 	@AfterTest
 	public void breakdown() {
 		
-		driver.close();
+		//driver.close();
 
 	}
 

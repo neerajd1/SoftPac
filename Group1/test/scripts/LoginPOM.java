@@ -15,7 +15,7 @@ public class LoginPOM {
 	String getURL = "http://205.147.102.59:8080/SoftPac/login";
 
 	By usernameText = By.id("user_name"), passwordText = By.id("password"),
-			submit = By.className("submit");
+			submit = By.className("submit"),logoutLink=By.className("logout");
 
 	String username = "beta1", password = "beta@123";
 
@@ -39,23 +39,23 @@ public class LoginPOM {
 		this.driver = driver;
 	}
 
-	public WebDriver login() {
+	public void login() {
 
 		try {
-			driver = goToLink();
+			goToLink();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
 		}
-		
-		driver.findElement(usernameText).sendKeys(username);
-		
-		driver.findElement(passwordText).sendKeys(password);
-		
-		driver.findElement(submit).click();
-		
-		return driver;
 
+		driver.findElement(usernameText).sendKeys(username);
+
+		driver.findElement(passwordText).sendKeys(password);
+
+		driver.findElement(submit).click();
+
+	}
+
+	public void logout() {
+		driver.findElement(logoutLink).click();
 	}
 
 	public WebDriver setChrome() {
@@ -74,12 +74,12 @@ public class LoginPOM {
 		return driver = new FirefoxDriver(ffBinary, firefoxProfile);
 	}
 
-	public WebDriver goToLink() throws InterruptedException {
+	public void goToLink() throws InterruptedException {
 
 		driver.manage().window().maximize();
 		driver.get(getURL);
 		driver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
-		return driver;
+		
 	}
 
 }
