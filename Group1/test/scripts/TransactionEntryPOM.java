@@ -4,13 +4,22 @@ package scripts;
  * @author Neeraj
  *
  */
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -19,6 +28,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.server.handler.FindElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class TransactionEntryPOM {
 
@@ -38,22 +49,37 @@ public class TransactionEntryPOM {
 	private By accountNumber = By.cssSelector("#account_chosen > a"),
 			accountNumberDropdown = By
 					.cssSelector("#account_chosen > div:nth-child(2) > ul");
+	private By transactionType = By.cssSelector("#transaction_chosen > a"),
+			transactionTypeDropdown = By
+					.cssSelector("#transaction_chosen > div > ul");
+
+	private By instrumentType = By.cssSelector("#instrumenttype_chosen > a"),
+			instrumentTypeDropdown = By
+					.cssSelector("#instrumenttype_chosen > div > ul");
+	private By transactionCode = By.cssSelector("#txncodeee_chosen > a"),
+			transactionCodeDropdown = By
+					.cssSelector("#txncodeee_chosen > div > ul");
+	private By amount = By.id("amount");
 
 	// submitButton
-	private By submitButton;
+	private By submitButton = By.id("submit");
 
 	// view photo link
 	private By photoLink = By.xpath("//*[@id='div4']/a");
 
-	//check update placeholders
-	
-	
-	
-	By holderName=By.id("holder"),odBalance=By.id("draw"),odInt=By.id("odint"),clearing=By.id("clearing");
-	By totalBalance=By.id("balance"),modeOfOperation=By.id("view_details"),token=By.id("token"),particulars=By.id("particular");
-	
-	String hn,odb,odi,clear,tb,moo,tok,partic ;
-	
+	// check update placeholders
+
+	private By holderName = By.id("holder"), odBalance = By.id("draw"),
+			odInt = By.id("odint"), clearing = By.id("clearing");
+	private By totalBalance = By.id("balance"), modeOfOperation = By
+			.id("view_details"), token = By.id("token"), particulars = By
+			.id("particular");
+
+	private String hn[] = new String[2], odb[] = new String[2],
+			odi[] = new String[2], clear[] = new String[2],
+			tb[] = new String[2], moo[] = new String[2], tok[] = new String[2],
+			partic[] = new String[2];
+
 	// Transaction Entry page visit
 	private By transactionLink = By
 			.cssSelector("body > div.mm-page > div.submenu > nav > ul > li:nth-child(2) > a"),
@@ -62,9 +88,13 @@ public class TransactionEntryPOM {
 			paymentReciept = By
 					.cssSelector("body > div.mm-page > div.submenu > nav > ul > li:nth-child(2) > ul > li:nth-child(2) > ul > li:nth-child(1) > a");
 
+	// voucher
+	//
+	private By voucherlink = By.className("voucher");
+
 	// Global elements needed
 	private WebDriver driver;
-	private Actions action;
+	private Actions builder;
 
 	// Constructor
 	public TransactionEntryPOM(WebDriver driver, String browser) {
@@ -81,9 +111,9 @@ public class TransactionEntryPOM {
 
 		}
 		this.driver = driver;
-		this.action = new Actions(driver);
-		
-		
+		this.builder = new Actions(driver);
+		// counterScreenshot = 0;
+
 	}
 
 	// Functions
@@ -91,14 +121,14 @@ public class TransactionEntryPOM {
 	public void login() {
 
 		try {
+
 			goToLink();
+
 		} catch (InterruptedException e) {
 		}
 
 		driver.findElement(usernameText).sendKeys(username);
-
 		driver.findElement(passwordText).sendKeys(password);
-
 		driver.findElement(submit).click();
 
 	}
@@ -116,11 +146,15 @@ public class TransactionEntryPOM {
 
 	public WebDriver setFirefox() {
 		File pathToBinary = new File(
-				"C:\\Users\\AM101_PC2\\AppData\\Local\\Mozilla Firefox\\firefox.exe");
+				"C:\\Users\\AM101_PC4\\AppData\\Local\\Mozilla Firefox\\firefox.exe");
 		FirefoxBinary ffBinary = new FirefoxBinary(pathToBinary);
 		FirefoxProfile firefoxProfile = new FirefoxProfile();
 
 		return driver = new FirefoxDriver(ffBinary, firefoxProfile);
+	}
+
+	public WebDriver returnDriver() {
+		return driver;
 	}
 
 	public void goToLink() throws InterruptedException {
@@ -135,7 +169,6 @@ public class TransactionEntryPOM {
 
 		System.out.println("Entered transactionEntry()");
 
-		Actions builder = new Actions(driver);
 		WebElement element = driver.findElement(transactionLink);
 		builder.moveToElement(element).build().perform();
 
@@ -144,20 +177,7 @@ public class TransactionEntryPOM {
 
 		element = driver.findElement(paymentReciept);
 		builder.moveToElement(element).click().build().perform();
-		
-		
-		hn=driver.findElement(holderName).getText();
-		odb=driver.findElement(odBalance).getText();
-		odi=driver.findElement(odInt).getText();
-		clear=driver.findElement(clearing).getText();
-		tb=driver.findElement(totalBalance).getText();
-		moo=driver.findElement(modeOfOperation).getText();
-		tok=driver.findElement(token).getText();
-		partic=driver.findElement(particulars).getText();
-		
-		
-		
-
+		driver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
 		System.out.println("Executed transactionEntry()");
 	}
 
@@ -166,187 +186,310 @@ public class TransactionEntryPOM {
 			String transactionCode, String amount) {
 
 		System.out.println("Single Account transaction form is to be filled");
-
-		/*
-		 * driver.findElement(MemberID1).click();
-		 * driver.findElement(searchmemberID).sendKeys(Keys.ENTER);
-		 */
+		record(0);
+		System.out.println(memberID);
+		System.out.println(accountNumber);
+		System.out.println(transactionType);
+		System.out.println(instrumentType);
+		System.out.println(transactionCode);
+		System.out.println(amount);
 
 		try {
-			if (driver.findElement(MemberID).getText()
-					.contains("-- Select Member ID --")) {
-				driver.findElement(MemberID).click();
-				List<WebElement> memberIDDropdownElements = driver.findElement(
-						memberIdDropdown).findElements(By.xpath(".//li"));
-				// List<WebElement> childs =
-				// rootWebElement.findElements(By.xpath(".//*"));
-				for (WebElement element : memberIDDropdownElements) {
-					System.out.println("Member ID " + element.getText());
-					if (element.getText().contains(memberID)) {
+			driver.findElement(this.MemberID).click();
 
-						element.click();
-						// driver.findElement(photoLink).click();
-						System.out.println("Click happened");
-						break;
-					}
+			List<WebElement> memberIDDropdownElements = driver.findElement(
+					memberIdDropdown).findElements(By.xpath(".//li"));
+			for (WebElement element : memberIDDropdownElements) {
+				System.out.println("Member ID " + element.getText());
+				if (element.getText().contains(memberID)) {
+
+					element.click();
+					// driver.findElement(photoLink).click();
+					System.out.println("Click happened");
+					break;
 				}
-				// driver.navigate().back();
-
 			}
+
+			driver.findElement(this.accountNumber).click();
+			List<WebElement> accountNumberDropdownElements = driver
+					.findElement(accountNumberDropdown).findElements(
+							By.xpath(".//li"));
+
+			for (WebElement element : accountNumberDropdownElements) {
+				System.out.println("Account number " + element.getText());
+				if (element.getText().contains(accountNumber)) {
+
+					element.click();
+					// record(1);
+					System.out.println("Click happened account number");
+					break;
+				}
+			}
+			driver.findElement(this.transactionType).click();
+
+			List<WebElement> transactionTypeDropdownElements = driver
+					.findElement(transactionTypeDropdown).findElements(
+							By.xpath(".//li"));
+			for (WebElement element : transactionTypeDropdownElements) {
+				System.out.println("Transaction Type " + element.getText());
+				if (element.getText().contains(transactionType)) {
+					element.click();
+					System.out.println("Click happened");
+					break;
+				}
+			}
+
+			driver.findElement(this.instrumentType).click();
+			List<WebElement> instrumentTypeDropdownElements = driver
+					.findElement(instrumentTypeDropdown).findElements(
+							By.xpath(".//li"));
+			for (WebElement element : instrumentTypeDropdownElements) {
+				System.out.println("Instrument Type " + element.getText());
+				if (element.getText().contains(instrumentType)) {
+					element.click();
+					System.out.println("Click happened");
+					break;
+				}
+			}
+
+			driver.findElement(this.transactionCode).click();
+			List<WebElement> transactionCodeDropdownElements = driver
+					.findElement(transactionCodeDropdown).findElements(
+							By.xpath(".//li"));
+			for (WebElement element : transactionCodeDropdownElements) {
+				System.out.println("Transaction Code " + element.getText());
+				if (element.getText().contains(transactionCode)) {
+					element.click();
+					System.out.println("Click happened");
+					break;
+				}
+			}
+
+			driver.findElement(this.amount).clear();
+			driver.findElement(this.amount).sendKeys(amount);
+			record(1);
+
 		} catch (Exception e) {
-			System.out.println("Exception");
+			System.out.println("exception");
 		}
+
+		// assertUpdatedValues();
 
 		System.out.println("Single Account transaction form is filled");
 
 	}
 
-	public void viewPhotoSignature(String memberID) {
+	public void viewPhotoSignature(String memberID) throws InterruptedException {
 
 		System.out.println("Entered viewPhotoSignature()");
-		/*
-		 * driver.findElement(MemberID1).click();
-		 * driver.findElement(searchmemberID).sendKeys(Keys.ENTER);
-		 */
 
-		System.out.println("Selected value :- "
-				+ driver.findElement(MemberID).getText());
 		try {
-			if (driver.findElement(MemberID).getText()
-					.contains("-- Select Member ID --")) {
-				driver.findElement(MemberID).click();
-				List<WebElement> memberIDDropdownElements = driver.findElement(
-						memberIdDropdown).findElements(By.xpath(".//li"));
-				// List<WebElement> childs =
-				// rootWebElement.findElements(By.xpath(".//*"));
-				for (WebElement element : memberIDDropdownElements) {
-					System.out.println("Member ID " + element.getText());
-					if (element.getText().contains(memberID)) {
-
-						element.click();
-						driver.findElement(photoLink).click();
-
-						System.out.println("Click happened");
-						break;
-					}
+			driver.findElement(this.MemberID).click();
+			List<WebElement> memberIDDropdownElements = driver.findElement(
+					memberIdDropdown).findElements(By.xpath(".//li"));
+			for (WebElement element : memberIDDropdownElements) {
+				System.out.println("Member ID " + element.getText());
+				if (element.getText().contains(memberID)) {
+					element.click();
+					// driver.findElement(photoLink).click();
+					System.out.println("Click happened");
+					break;
 				}
-				driver.navigate().back();
-				//transactionEntry();
 			}
+
 		} catch (Exception e) {
 			System.out.println("Exception");
 		}
 
+		driver.findElement(photoLink).click();
+
+		String transcationWindowHandler = driver.getWindowHandle();
+		String viewsignatureWindowHandler;
+		Set<String> handles = driver.getWindowHandles();
+		handles.remove(transcationWindowHandler);// remove parent windowhandle
+													// from set
+		Iterator<String> iterator = handles.iterator();
+		while (iterator.hasNext()) {
+			viewsignatureWindowHandler = iterator.next();
+			driver.switchTo().window(viewsignatureWindowHandler);
+			System.out.println(viewsignatureWindowHandler);
+			String verify = driver
+					.findElement(
+							By.cssSelector("body > section > article > div > div > img"))
+					.getAttribute("src");
+			System.out.println(verify);
+			// assertEquals("http://205.147.102.59:8080/SoftPac/resources/mytheme/images/0",verify);
+			assertNotEquals(
+					"http://205.147.102.59:8080/SoftPac/resources/mytheme/images/0",
+					verify);
+			System.out.println("Photo uploaded successfully");
+			Thread.sleep(3000);
+		}
+		driver.close();
+		driver.switchTo().window(transcationWindowHandler);
+		Thread.sleep(2000);
 		System.out.println("Executed viewPhotoSignature()");
 	}
 
 	public void selectAccountNumber(String memberID, String accountNumber) {
-
+		System.out.println("Entered selectAccountNumber()");
 		try {
-			if (driver.findElement(MemberID).getText()
-					.contains("-- Select Member ID --")) {
-				driver.findElement(MemberID).click();
-				List<WebElement> memberIDDropdownElements = driver.findElement(
-						memberIdDropdown).findElements(By.xpath(".//li"));
-				// List<WebElement> childs =
-				// rootWebElement.findElements(By.xpath(".//*"));
-				for (WebElement element : memberIDDropdownElements) {
-					System.out.println("Member ID " + element.getText());
-					if (element.getText().contains(memberID)) {
 
-						element.click();
-						// driver.findElement(photoLink).click();
+			record(0);
 
-						System.out.println("Click happened");
-						break;
-					}
+			driver.findElement(this.MemberID).click();
+
+			List<WebElement> memberIDDropdownElements = driver.findElement(
+					memberIdDropdown).findElements(By.xpath(".//li"));
+			for (WebElement element : memberIDDropdownElements) {
+				System.out.println("Member ID " + element.getText());
+				if (element.getText().contains(memberID)) {
+
+					element.click();
+					// driver.findElement(photoLink).click();
+					System.out.println("Click happened");
+					break;
 				}
-				record();
-				if (driver.findElement(this.accountNumber).getText()
-						.contains("-- Select Account Number --")) {
-					driver.findElement(this.accountNumber).click();
-					List<WebElement> accountNumberDropdownElements = driver
-							.findElement(accountNumberDropdown).findElements(
-									By.xpath(".//li"));
-					// List<WebElement> childs =
-					// rootWebElement.findElements(By.xpath(".//*"));
-					for (WebElement element : accountNumberDropdownElements) {
-						System.out.println("Account number "
-								+ element.getText());
-						if (element.getText().contains(accountNumber)) {
-
-							element.click();
-							// driver.findElement(photoLink).click();
-
-							System.out.println("Click happened account number");
-							break;
-						}
-					}
-					// driver.navigate().back();
-					record();
-				}
-
-			} else if (driver.findElement(this.accountNumber).getText()
-					.contains("-- Select Account Number --")) {
-				driver.findElement(this.accountNumber).click();
-				List<WebElement> accountNumberDropdownElements = driver
-						.findElement(accountNumberDropdown).findElements(
-								By.xpath(".//li"));
-				// List<WebElement> childs =
-				// rootWebElement.findElements(By.xpath(".//*"));
-				for (WebElement element : accountNumberDropdownElements) {
-					System.out.println("Account number " + element.getText());
-					if (element.getText().contains(accountNumber)) {
-
-						element.click();
-						// driver.findElement(photoLink).click();
-
-						System.out.println("Click happened account number");
-						break;
-					}
-				}
-				
-				
-				
 			}
 
+			driver.findElement(this.accountNumber).click();
+			List<WebElement> accountNumberDropdownElements = driver
+					.findElement(accountNumberDropdown).findElements(
+							By.xpath(".//li"));
+
+			for (WebElement element : accountNumberDropdownElements) {
+				System.out.println("Account number " + element.getText());
+				if (element.getText().contains(accountNumber)) {
+
+					element.click();
+					record(1);
+					System.out.println("Click happened account number");
+					break;
+				}
+			}
+
+			record(1);
+
+		} catch (Exception e) {
+			System.out.println("Exception");
+		}
+
+		assertUpdatedValues();
+		System.out.println("Executed selectAccountNumber()");
+
+	}
+
+	public void record(int i) {
+
+		System.out.println("Recording");
+		System.out.println(driver.findElement(particulars).getAttribute(
+				"placeholder"));
+
+		if (driver.findElement(particulars).getAttribute("value") != null)
+			partic[i] = driver.findElement(particulars).getAttribute("value");
+		else
+			partic[i] = "null";
+
+		hn[i] = driver.findElement(holderName).getAttribute("value");
+		if (driver.findElement(holderName).getAttribute("value") != null)
+			hn[i] = driver.findElement(holderName).getAttribute("value");
+		else
+			hn[i] = "null";
+		odb[i] = driver.findElement(odBalance).getAttribute("value");
+		odi[i] = driver.findElement(odInt).getAttribute("value");
+
+		if (driver.findElement(odBalance).getAttribute("value") != null)
+			odb[i] = driver.findElement(odBalance).getAttribute("value");
+		else
+			odb[i] = "null";
+
+		if (driver.findElement(odInt).getAttribute("value") != null)
+			odi[i] = driver.findElement(odInt).getAttribute("value");
+		else
+			odi[i] = "null";
+		if (driver.findElement(clearing).getAttribute("value") != null)
+			clear[i] = driver.findElement(clearing).getAttribute("value");
+		else
+			clear[i] = "null";
+
+		if (driver.findElement(totalBalance).getAttribute("value") != null)
+			tb[i] = driver.findElement(totalBalance).getAttribute("value");
+		else
+			tb[i] = "null";
+
+		if (driver.findElement(modeOfOperation).getAttribute("value") != null)
+			moo[i] = driver.findElement(particulars).getAttribute("value");
+		else
+			moo[i] = "null";
+
+		if (driver.findElement(token).getAttribute("value") != null)
+			tok[i] = driver.findElement(token).getAttribute("value");
+		else
+			tok[i] = "null";
+
+		
+		System.out.println("Recording output :- ");
+		System.out.println(partic[i]);
+		System.out.println(hn[i]);
+		System.out.println(odb[i]);
+		System.out.println(odi[i]);
+		System.out.println(clear[i]);
+		System.out.println(tb[i]);
+		System.out.println(moo[i]);
+		System.out.println(tok[i]);
+		
+		System.out.println("Recording over");
+		
+		
+	}
+
+	public void assertUpdatedValues() {
+		try {
+			//System.out.println(hn[0] + " equals " + hn[1] + " ?");
+			//assertNotEquals(hn[0], hn[1]);
+			System.out.println(odb[0] + " equals " + odb[1] + " ?");
+			assertNotEquals(odb[0], odb[1]);
+			System.out.println(odi[0] + " equals " + odi[1] + " ?");
+			assertNotEquals(odi[0], odi[1]);
+			System.out.println(clear[0] + " equals " + clear[1] + " ?");
+			assertNotEquals(clear[0], clear[1]);
+			System.out.println(tb[0] + " equals " + tb[1] + " ?");
+			assertNotEquals(tb[0], tb[1]);
+			System.out.println(moo[0] + " equals " + moo[1] + " ?");
+			assertNotEquals(moo[0], moo[1]);
+			System.out.println(tok[0] + " equals " + tok[1] + " ?");
+			assertNotEquals(tok[0], tok[1]);
 		} catch (Exception e) {
 			System.out.println("Exception");
 		}
 
 	}
 
-	public void record(){
-		
-		System.out.println("Recording");
-		System.out.println(driver.findElement(particulars).getAttribute("placeholder"));
-		partic=driver.findElement(particulars).getText();
-		hn=driver.findElement(holderName).getText();
-		odb=driver.findElement(odBalance).getText();
-		odi=driver.findElement(odInt).getText();
-		clear=driver.findElement(clearing).getText();
-		tb=driver.findElement(totalBalance).getText();
-		moo=driver.findElement(modeOfOperation).getText();
-		tok=driver.findElement(token).getText();
-		
-		
-		System.out.println("Initial values :- ");
-		System.out.println(hn);
-		System.out.println(odb);
-		System.out.println(odi);
-		System.out.println(clear);
-		System.out.println(tb);
-		System.out.println(moo);
-		System.out.println(tok);
-		System.out.println(partic);
+	public void particularsCheck() {
+		System.out.println(partic[0] + " equals " + partic[1] + " ?");
+		assertNotEquals(partic[0], partic[1]);
 	}
-	
+
 	public void performSingleAccountTransaction(String memberID,
 			String accountNumber, String transactionType,
 			String instrumentType, String transactionCode, String amount) {
+		System.out.println("Entered performSingleAccountTransaction()");
 		fillSingleAccountForm(memberID, accountNumber, transactionType,
 				instrumentType, transactionCode, amount);
+		particularsCheck();
+		driver.findElement(submitButton).click();
 
+		System.out.println("Entered performSingleAccountTransaction()");
+
+	}
+
+	public void getLastTransaction() {
+
+		WebDriverWait wait = new WebDriverWait(driver, 3000);
+		WebElement we = wait.until(ExpectedConditions
+				.visibilityOfElementLocated(voucherlink));
+		we.click();
+	    //driver.switchTo().defaultContent();
 	}
 
 }

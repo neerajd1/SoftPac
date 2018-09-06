@@ -14,9 +14,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterTest;
+//import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
+//import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -25,22 +25,18 @@ public class TransactionEntrySingleAccountScenario {
 	WebDriver driver;
 	TransactionEntryPOM pom;
 
-	@SuppressWarnings("deprecation")
+	// @SuppressWarnings("deprecation")
 	public static String[][] getExcelData(String fileName, String sheetName)
 			throws IOException {
+	
 		String[][] arrayExcelData = null;
 		Workbook wb = null;
 		try {
 			File file = new File(fileName);
 			FileInputStream fs = new FileInputStream(file);
-			// .xls
 			if (fileName.substring(fileName.indexOf(".")).equals(".xlsx")) {
-
-				// If it is xlsx file then create object of XSSFWorkbook class
-
 				wb = new XSSFWorkbook(fs);
 			} else if (fileName.substring(fileName.indexOf(".")).equals(".xls")) {
-				// If it is xls file then create object of HSSFWorkbook class
 				wb = new HSSFWorkbook(fs);
 			}
 			Sheet sh = wb.getSheet(sheetName);
@@ -62,77 +58,74 @@ public class TransactionEntrySingleAccountScenario {
 			System.out.println("error in getExcelData()");
 		}
 		return arrayExcelData;
+	
 	}
 
 	@DataProvider(name = "DP1")
 	public Object[][] createData1() throws IOException {
+	
 		Object[][] retObjArr = getExcelData(
-				"test\\resources\\data\\Transaction.xlsx", "SingleAccount");// for
-																				// xlsx
-
-		// for xls -----------------
-		// getExcelData("test\\resources\\data\\movieDataPoi.xls","DataPool");
-		// System.out.println("*****************  2 *************************");
+				"test\\resources\\data\\Transaction.xlsx", "SingleAccount");	
 		return (retObjArr);
+	
 	}
 
 	@BeforeClass
 	public void setUp() {
 
-		/*
-		 * pom1=new LoginPOM(driver, "chrome"); driver=pom1.setChrome();
-		 */
 		pom = new TransactionEntryPOM(driver, "chrome");
 		pom.login();
 		pom.transactionEntry();
 
 	}
 
-	/*
-	 * @BeforeTest public void enter(){ pom.transactionEntry(); }
-	 */
-
-	/*@Test(dataProvider = "DP1")
+	@Test(dataProvider = "DP1", priority = 0)
 	public void viewPhotoSignature(String memberID, String accountNumber,
 			String transactionType, String instrumentType,
 			String transactionCode, String amount) {
-		//pom.transactionEntry();
-		System.out.println("Member ID excel :- "+memberID);
-		pom.viewPhotoSignature(memberID);
-	}*/
+		
+		try {
+			pom.viewPhotoSignature(memberID);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+	}
 
-	@Test(dataProvider = "DP1")
-	public void selectAccountNumber(String memberID, String accountNumber,
+	@Test(dataProvider = "DP1", priority = 2)
+	public void singleAccountTransaction(String memberID, String accountNumber,
 			String transactionType, String instrumentType,
 			String transactionCode, String amount) {
+		
+		pom.performSingleAccountTransaction(memberID, accountNumber, transactionType, instrumentType, transactionCode, amount);
+		
+		
+
+	}
+	@Test(dataProvider = "DP1", priority = 3)
+	public void getLastTransaction(String memberID, String accountNumber,
+			String transactionType, String instrumentType,
+			String transactionCode, String amount) {
+		
+		pom.performSingleAccountTransaction(memberID, accountNumber, transactionType, instrumentType, transactionCode, amount);
+		pom.getLastTransaction();
+		
+
+	}
+
+
+	@Test(dataProvider = "DP1", priority = 1)
+	public void accountNumberCheckAllAutofields(String memberID,
+			String accountNumber, String transactionType,
+			String instrumentType, String transactionCode, String amount) {
 		pom.selectAccountNumber(memberID, accountNumber);
 	}
 
-	/*@Test(dataProvider = "DP1")
-	public void creditUsingCheque(String memberID, String accountNumber,
-			String transactionType, String instrumentType,
-			String transactionCode, String amount) {
-		// pom.viewPhotoSignature();
-	}
-
-	@Test(dataProvider = "DP1")
-	public void debitUsingWithdrawal(String memberID, String accountNumber,
-			String transactionType, String instrumentType,
-			String transactionCode, String amount) {
-
-	}
-
-	@Test(dataProvider = "DP1")
-	public void checkParticulars(String memberID, String accountNumber,
-			String transactionType, String instrumentType,
-			String transactionCode, String amount) {
-
-	}*/
-
 	@AfterClass
 	public void turnDown() {
-	//	pom.logout();
-	//	driver.quit();
+		driver=pom.returnDriver();
+		pom.logout();
+		driver.close();
 	}
-
 }

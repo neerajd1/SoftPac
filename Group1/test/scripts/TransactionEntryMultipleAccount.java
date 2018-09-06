@@ -98,7 +98,7 @@ public class TransactionEntryMultipleAccount {
 			String secondAccountNumber, String secondAmount,
 			String accountNumber, String transactionType,
 			String instrumentType, String transactionCode, String amount) {
-		pom.viewPhotoSignature(memberID);
+		
 	}
 
 	@Test(dataProvider = "DP1")
