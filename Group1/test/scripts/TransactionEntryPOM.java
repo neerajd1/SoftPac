@@ -60,6 +60,7 @@ public class TransactionEntryPOM {
 			transactionCodeDropdown = By
 					.cssSelector("#txncodeee_chosen > div > ul");
 	private By amount = By.id("amount");
+	private By chequeno=By.id("chequeno");
 
 	// submitButton
 	private By submitButton = By.id("submit");
@@ -182,7 +183,7 @@ public class TransactionEntryPOM {
 	}
 
 	public void fillSingleAccountForm(String memberID, String accountNumber,
-			String transactionType, String instrumentType,
+			String transactionType, String instrumentType,String chequeno, 
 			String transactionCode, String amount) {
 
 		System.out.println("Single Account transaction form is to be filled");
@@ -252,6 +253,18 @@ public class TransactionEntryPOM {
 				}
 			}
 
+			if(driver.findElement(this.instrumentType).getText().equalsIgnoreCase("cheque")){
+				
+				Thread.sleep(3000);
+				
+				WebDriverWait wait = new WebDriverWait(driver, 3000);
+				WebElement we = wait.until(ExpectedConditions
+						.visibilityOfElementLocated(this.chequeno));
+				we.sendKeys(chequeno);
+				Thread.sleep(3000);
+			}
+				
+			
 			driver.findElement(this.transactionCode).click();
 			List<WebElement> transactionCodeDropdownElements = driver
 					.findElement(transactionCodeDropdown).findElements(
@@ -306,8 +319,7 @@ public class TransactionEntryPOM {
 		String transcationWindowHandler = driver.getWindowHandle();
 		String viewsignatureWindowHandler;
 		Set<String> handles = driver.getWindowHandles();
-		handles.remove(transcationWindowHandler);// remove parent windowhandle
-													// from set
+		handles.remove(transcationWindowHandler);
 		Iterator<String> iterator = handles.iterator();
 		while (iterator.hasNext()) {
 			viewsignatureWindowHandler = iterator.next();
@@ -318,6 +330,7 @@ public class TransactionEntryPOM {
 							By.cssSelector("body > section > article > div > div > img"))
 					.getAttribute("src");
 			System.out.println(verify);
+			if(verify!=null)
 			// assertEquals("http://205.147.102.59:8080/SoftPac/resources/mytheme/images/0",verify);
 			assertNotEquals(
 					"http://205.147.102.59:8080/SoftPac/resources/mytheme/images/0",
@@ -388,44 +401,44 @@ public class TransactionEntryPOM {
 		if (driver.findElement(particulars).getAttribute("value") != null)
 			partic[i] = driver.findElement(particulars).getAttribute("value");
 		else
-			partic[i] = "null";
+			partic[i] = "is";
 
-		hn[i] = driver.findElement(holderName).getAttribute("value");
+	
 		if (driver.findElement(holderName).getAttribute("value") != null)
 			hn[i] = driver.findElement(holderName).getAttribute("value");
 		else
-			hn[i] = "null";
+			hn[i] = "is";
 		odb[i] = driver.findElement(odBalance).getAttribute("value");
 		odi[i] = driver.findElement(odInt).getAttribute("value");
 
 		if (driver.findElement(odBalance).getAttribute("value") != null)
 			odb[i] = driver.findElement(odBalance).getAttribute("value");
 		else
-			odb[i] = "null";
+			odb[i] = "is";
 
 		if (driver.findElement(odInt).getAttribute("value") != null)
 			odi[i] = driver.findElement(odInt).getAttribute("value");
 		else
-			odi[i] = "null";
+			odi[i] = "is";
 		if (driver.findElement(clearing).getAttribute("value") != null)
 			clear[i] = driver.findElement(clearing).getAttribute("value");
 		else
-			clear[i] = "null";
+			clear[i] = "is";
 
 		if (driver.findElement(totalBalance).getAttribute("value") != null)
 			tb[i] = driver.findElement(totalBalance).getAttribute("value");
 		else
-			tb[i] = "null";
+			tb[i] = "is";
 
 		if (driver.findElement(modeOfOperation).getAttribute("value") != null)
 			moo[i] = driver.findElement(particulars).getAttribute("value");
 		else
-			moo[i] = "null";
+			moo[i] = "is";
 
 		if (driver.findElement(token).getAttribute("value") != null)
 			tok[i] = driver.findElement(token).getAttribute("value");
 		else
-			tok[i] = "null";
+			tok[i] = "is";
 
 		
 		System.out.println("Recording output :- ");
@@ -445,8 +458,26 @@ public class TransactionEntryPOM {
 
 	public void assertUpdatedValues() {
 		try {
+			
+			if(!hn[0].equalsIgnoreCase(hn[1]))
+				System.out.println("hn updated");
+			if(!odb[0].equalsIgnoreCase(odb[1]))
+				System.out.println("odb updated");
+			if(!odi[0].equalsIgnoreCase(odi[1]))
+				System.out.println("odi updated");
+			if(!clear[0].equalsIgnoreCase(clear[1]))
+				System.out.println("clear updated");
+			if(!clear[0].equalsIgnoreCase(clear[1]))
+				System.out.println("hn updated");
+			if(!tb[0].equalsIgnoreCase(tb[1]))
+				System.out.println("tb updated");
+			if(!moo[0].equalsIgnoreCase(moo[1]))
+				System.out.println("moo updated");
+			if(!tok[0].equalsIgnoreCase(tok[1]))
+				System.out.println("tok updated");
+			
 			//System.out.println(hn[0] + " equals " + hn[1] + " ?");
-			//assertNotEquals(hn[0], hn[1]);
+			assertNotEquals(hn[0], hn[1]);
 			System.out.println(odb[0] + " equals " + odb[1] + " ?");
 			assertNotEquals(odb[0], odb[1]);
 			System.out.println(odi[0] + " equals " + odi[1] + " ?");
@@ -470,26 +501,33 @@ public class TransactionEntryPOM {
 		assertNotEquals(partic[0], partic[1]);
 	}
 
-	public void performSingleAccountTransaction(String memberID,
-			String accountNumber, String transactionType,
-			String instrumentType, String transactionCode, String amount) {
+	public void performSingleAccountTransaction(String memberID, String accountNumber,
+			String transactionType, String instrumentType,String chequeno, 
+			String transactionCode, String amount) {
 		System.out.println("Entered performSingleAccountTransaction()");
 		fillSingleAccountForm(memberID, accountNumber, transactionType,
-				instrumentType, transactionCode, amount);
+				instrumentType,chequeno, transactionCode, amount );
 		particularsCheck();
 		driver.findElement(submitButton).click();
 
-		System.out.println("Entered performSingleAccountTransaction()");
-
-	}
-
-	public void getLastTransaction() {
-
+		System.out.println("Executed performSingleAccountTransaction()");
+		
 		WebDriverWait wait = new WebDriverWait(driver, 3000);
 		WebElement we = wait.until(ExpectedConditions
 				.visibilityOfElementLocated(voucherlink));
-		we.click();
-	    //driver.switchTo().defaultContent();
+		assertEquals(we.getText(), "Click Here To Generate Voucher For Previous Transaction");
+		if(we.getText().contains("Generate Voucher")){
+			System.out.println(we.getText());
+			we.click();	
+		}
+		else{
+			System.out.println(we.getText());
+		}
+		
+		
+
 	}
+
+
 
 }

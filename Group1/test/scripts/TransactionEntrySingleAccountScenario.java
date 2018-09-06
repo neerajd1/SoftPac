@@ -81,7 +81,7 @@ public class TransactionEntrySingleAccountScenario {
 
 	@Test(dataProvider = "DP1", priority = 0)
 	public void viewPhotoSignature(String memberID, String accountNumber,
-			String transactionType, String instrumentType,
+			String transactionType, String instrumentType,String chequeno, 
 			String transactionCode, String amount) {
 		
 		try {
@@ -93,32 +93,22 @@ public class TransactionEntrySingleAccountScenario {
 	
 	}
 
-	@Test(dataProvider = "DP1", priority = 2)
-	public void singleAccountTransaction(String memberID, String accountNumber,
-			String transactionType, String instrumentType,
-			String transactionCode, String amount) {
-		
-		pom.performSingleAccountTransaction(memberID, accountNumber, transactionType, instrumentType, transactionCode, amount);
-		
-		
-
-	}
-	@Test(dataProvider = "DP1", priority = 3)
-	public void getLastTransaction(String memberID, String accountNumber,
-			String transactionType, String instrumentType,
-			String transactionCode, String amount) {
-		
-		pom.performSingleAccountTransaction(memberID, accountNumber, transactionType, instrumentType, transactionCode, amount);
-		pom.getLastTransaction();
-		
-
-	}
-
-
 	@Test(dataProvider = "DP1", priority = 1)
-	public void accountNumberCheckAllAutofields(String memberID,
-			String accountNumber, String transactionType,
-			String instrumentType, String transactionCode, String amount) {
+	public void singleAccountTransaction(String memberID, String accountNumber,
+			String transactionType, String instrumentType,String chequeno, 
+			String transactionCode, String amount) {
+		
+		pom.performSingleAccountTransaction(memberID, accountNumber, transactionType,
+				instrumentType,chequeno, transactionCode, amount);
+			
+
+	}
+
+
+	@Test(dataProvider = "DP1", priority = 2)
+	public void accountNumberCheckAllAutofields(String memberID, String accountNumber,
+			String transactionType, String instrumentType,String chequeno, 
+			String transactionCode, String amount) {
 		pom.selectAccountNumber(memberID, accountNumber);
 	}
 
