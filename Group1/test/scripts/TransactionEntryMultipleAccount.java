@@ -25,22 +25,18 @@ public class TransactionEntryMultipleAccount {
 	WebDriver driver;
 	TransactionEntryPOM pom;
 
-	@SuppressWarnings("deprecation")
+	// @SuppressWarnings("deprecation")
 	public static String[][] getExcelData(String fileName, String sheetName)
 			throws IOException {
+
 		String[][] arrayExcelData = null;
 		Workbook wb = null;
 		try {
 			File file = new File(fileName);
 			FileInputStream fs = new FileInputStream(file);
-			// .xls
 			if (fileName.substring(fileName.indexOf(".")).equals(".xlsx")) {
-
-				// If it is xlsx file then create object of XSSFWorkbook class
-
 				wb = new XSSFWorkbook(fs);
 			} else if (fileName.substring(fileName.indexOf(".")).equals(".xls")) {
-				// If it is xls file then create object of HSSFWorkbook class
 				wb = new HSSFWorkbook(fs);
 			}
 			Sheet sh = wb.getSheet(sheetName);
@@ -62,71 +58,47 @@ public class TransactionEntryMultipleAccount {
 			System.out.println("error in getExcelData()");
 		}
 		return arrayExcelData;
+
 	}
 
 	@DataProvider(name = "DP1")
 	public Object[][] createData1() throws IOException {
-		Object[][] retObjArr = getExcelData(
-				"test2\\resources\\data\\Transaction.xlsx", "MultipleAccount");// for
-																				// xlsx
 
-		// for xls -----------------
-		// getExcelData("test\\resources\\data\\movieDataPoi.xls","DataPool");
-		// System.out.println("*****************  2 *************************");
+		Object[][] retObjArr = getExcelData(
+				"test\\resources\\data\\Transaction.xlsx", "SingleAccount");
 		return (retObjArr);
+
 	}
 
 	@BeforeClass
 	public void setUp() {
 
-		/*
-		 * pom1=new LoginPOM(driver, "chrome"); driver=pom1.setChrome();
-		 */
 		pom = new TransactionEntryPOM(driver, "chrome");
 		pom.login();
 		pom.transactionEntry();
 
 	}
 
-	/*
-	 * @BeforeTest public void enter(){ pom.transactionEntry(); }
-	 */
+	@Test(dataProvider = "DP1", priority = 1)
+	public void multipleAccountTransaction(String memberID,String NoofAccounts, String Account, String Amount,  String accountNumber,
+			String transactionType, String instrumentType, String chequeno,
+			String charges, String transactionCode, String amount) {
 
-	@Test(dataProvider = "DP1")
-	public void viewPhotoSignature(String memberID, String numberOfAccounts,
-			String firstAccountNumber, String firstAmount,
-			String secondAccountNumber, String secondAmount,
-			String accountNumber, String transactionType,
-			String instrumentType, String transactionCode, String amount) {
-		
-	}
-
-	@Test(dataProvider = "DP1")
-	public void selectAccountNumber(String memberID, String numberOfAccounts,
-			String firstAccountNumber, String firstAmount,
-			String secondAccountNumber, String secondAmount,
-			String accountNumber, String transactionType,
-			String instrumentType, String transactionCode, String amount) {
+		try {
+			pom.performMultipleAccountsTransaction(memberID,NoofAccounts,Account, Amount, accountNumber, transactionType,
+					instrumentType, chequeno, charges, transactionCode, amount);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
-
-	@Test(dataProvider = "DP1")
-	public void creditUsingCheque(String memberID, String numberOfAccounts,
-			String firstAccountNumber, String firstAmount,
-			String secondAccountNumber, String secondAmount,
-			String accountNumber, String transactionType,
-			String instrumentType, String transactionCode, String amount) {
-		
-	}
-
-	
 
 	@AfterClass
 	public void turnDown() {
-		/*
-		 * pom.logout(); driver.quit();
-		 */
-
+		driver = pom.returnDriver();
+		pom.logout();
+		driver.close();
 	}
 
 }

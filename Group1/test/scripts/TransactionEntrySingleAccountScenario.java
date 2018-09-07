@@ -80,8 +80,8 @@ public class TransactionEntrySingleAccountScenario {
 	}
 
 	@Test(dataProvider = "DP1", priority = 0)
-	public void viewPhotoSignature(String memberID, String accountNumber,
-			String transactionType, String instrumentType,String chequeno, 
+	public void viewPhotoSignature(String memberID,String noofaccounts, String accounts,String amounts, String accountNumber,
+			String transactionType, String instrumentType,String chequeno, String charges,
 			String transactionCode, String amount) {
 		
 		try {
@@ -94,12 +94,12 @@ public class TransactionEntrySingleAccountScenario {
 	}
 
 	@Test(dataProvider = "DP1", priority = 1)
-	public void singleAccountTransaction(String memberID, String accountNumber,
-			String transactionType, String instrumentType,String chequeno, 
+	public void singleAccountTransaction(String memberID,String noofaccounts, String accounts,String amounts, String accountNumber,
+			String transactionType, String instrumentType,String chequeno, String charges,
 			String transactionCode, String amount) {
 		
 		pom.performSingleAccountTransaction(memberID, accountNumber, transactionType,
-				instrumentType,chequeno, transactionCode, amount);
+				instrumentType,chequeno,charges, transactionCode, amount);
 			
 
 	}
@@ -107,7 +107,7 @@ public class TransactionEntrySingleAccountScenario {
 
 	@Test(dataProvider = "DP1", priority = 2)
 	public void accountNumberCheckAllAutofields(String memberID, String accountNumber,
-			String transactionType, String instrumentType,String chequeno, 
+			String transactionType, String instrumentType,String chequeno, String charges,
 			String transactionCode, String amount) {
 		pom.selectAccountNumber(memberID, accountNumber);
 	}
