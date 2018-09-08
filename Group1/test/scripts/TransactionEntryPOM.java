@@ -1,25 +1,16 @@
-package scripts;
+package scripts.transaction;
 
-/**
- * @author Neeraj
- *
- */
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -27,7 +18,6 @@ import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.remote.server.handler.FindElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -90,20 +80,17 @@ public class TransactionEntryPOM {
 					.cssSelector("body > div.mm-page > div.submenu > nav > ul > li:nth-child(2) > ul > li:nth-child(2) > a"),
 			paymentReciept = By
 					.cssSelector("body > div.mm-page > div.submenu > nav > ul > li:nth-child(2) > ul > li:nth-child(2) > ul > li:nth-child(1) > a");
-//Multiple accounts
+	// Multiple accounts
 	By noofaccounts = By.cssSelector("#multiple_no");
 	By noofaccountsshow = By.cssSelector("#hide_multiple");
 	By accountshowclose = By.cssSelector("#close");
 	By accountdonebutton = By.cssSelector("#done");
-	
-	
-	
+
 	private By voucherlink = By.className("voucher");
 
 	// Global elements needed
 	private WebDriver driver;
 	private Actions builder;
-	private static int amountsum = 0;
 
 	// Constructor
 	public TransactionEntryPOM(WebDriver driver, String browser) {
@@ -170,7 +157,7 @@ public class TransactionEntryPOM {
 
 		driver.manage().window().maximize();
 		driver.get(getURL);
-		driver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
+		driver.manage().timeouts().pageLoadTimeout(90, TimeUnit.SECONDS);
 
 	}
 
@@ -204,7 +191,7 @@ public class TransactionEntryPOM {
 		System.out.println(amount);
 
 		try {
-			assertNotEquals(memberID,"");
+			assertNotEquals(memberID, "");
 			driver.findElement(this.MemberID).click();
 
 			List<WebElement> memberIDDropdownElements = driver.findElement(
@@ -261,7 +248,6 @@ public class TransactionEntryPOM {
 					break;
 				}
 			}
-
 			if (driver.findElement(this.instrumentType).getText()
 					.equalsIgnoreCase("cheque")) {
 
@@ -270,6 +256,7 @@ public class TransactionEntryPOM {
 				WebDriverWait wait = new WebDriverWait(driver, 3000);
 				WebElement we = wait.until(ExpectedConditions
 						.visibilityOfElementLocated(this.chequeno));
+				we.clear();
 				we.sendKeys(chequeno);
 				Thread.sleep(3000);
 			}
@@ -316,10 +303,26 @@ public class TransactionEntryPOM {
 
 	}
 
+	public void checkChargesAmountUpdate(String memberID, String noofaccounts,
+			String accounts, String amounts, String accountNumber,
+			String transactionType, String instrumentType, String chequeno,
+			String charges, String transactionCode, String amount) {
+
+		fillSingleAccountForm(memberID, accountNumber, transactionType,
+				instrumentType, chequeno, charges, transactionCode, amount);
+		String expected = driver.findElement(this.amount).getText();
+		driver.findElement(this.amount).sendKeys(amount);
+		String actual = driver.findElement(this.amount).getText();
+		if (!actual.equals(expected)) {
+			System.out.println("Amount field is editable");
+		}
+		assertEquals(actual, expected);
+
+	}
+
 	public void viewPhotoSignature(String memberID) throws InterruptedException {
 
 		System.out.println("Entered viewPhotoSignature()");
-
 		try {
 			assertNotEquals("", memberID);
 			driver.findElement(this.MemberID).click();
@@ -373,7 +376,7 @@ public class TransactionEntryPOM {
 	public void selectAccountNumber(String memberID, String accountNumber) {
 		System.out.println("Entered selectAccountNumber()");
 		try {
-
+			assertNotEquals(memberID, "");
 			driver.findElement(this.MemberID).click();
 
 			List<WebElement> memberIDDropdownElements = driver.findElement(
@@ -428,7 +431,7 @@ public class TransactionEntryPOM {
 		odi[i] = driver.findElement(odInt).getAttribute("value");
 		clear[i] = driver.findElement(clearing).getAttribute("value");
 		tb[i] = driver.findElement(totalBalance).getAttribute("value");
-		moo[i] = driver.findElement(particulars).getAttribute("value");
+		moo[i] = driver.findElement(modeOfOperation).getAttribute("value");
 		tok[i] = driver.findElement(token).getAttribute("value");
 
 		System.out.println("Recording over");
@@ -484,6 +487,36 @@ public class TransactionEntryPOM {
 		assertNotEquals(partic[0], partic[1]);
 	}
 
+	public void checkAmountEditableCharges(String memberID,
+			String accountNumber, String transactionType,
+			String instrumentType, String chequeno, String charges,
+			String transactionCode, String amount) {
+
+		fillSingleAccountForm(memberID, accountNumber, transactionType,
+				instrumentType, chequeno, charges, transactionCode, amount);
+		String expected = driver.findElement(this.amount).getText();
+		String actual;
+		if (instrumentType.equals("Charges")) {
+
+			driver.findElement(this.charges).click();
+			List<WebElement> chargesDropdownElements = driver.findElement(
+					chargesDropdown).findElements(By.xpath(".//li"));
+			for (WebElement element : chargesDropdownElements) {
+				System.out.println("Transaction Code " + element.getText());
+				if (element.getText().contains(charges)) {
+					element.click();
+					System.out.println("Click happened");
+					break;
+				}
+			}
+			driver.findElement(this.amount).sendKeys(amount);
+			actual = driver.findElement(this.amount).getText();
+			System.out.println("Assert Charges");
+			assertEquals(actual, expected);
+		}
+
+	}
+
 	public void performSingleAccountTransaction(String memberID,
 			String accountNumber, String transactionType,
 			String instrumentType, String chequeno, String charges,
@@ -496,7 +529,7 @@ public class TransactionEntryPOM {
 
 		System.out.println("Executed performSingleAccountTransaction()");
 
-		if (driver.getTitle().equals("JBoss Web/7.0.13.Final  - Error report"))
+		if (driver.getTitle().equals("JBoss Web/7.0.13.Final - Error report"))
 			driver.navigate().back();
 
 		else {
@@ -520,162 +553,232 @@ public class TransactionEntryPOM {
 		}
 
 	}
-	
-	
-	public void performMemberID(String MemberID) {
+
+	public void TestCaseAddMultipleAccounts(String MemberID,
+			String NoofAccounts, String Account, String Amount)
+			throws Exception {
+
+		// enter Member ID
+		Thread.sleep(2000);
 		driver.findElement(this.MemberID).click();
-		List<WebElement> memberIDDropdownElements = driver.findElement(memberIdDropdown).findElements(By.xpath(".//li"));
+		List<WebElement> memberIDDropdownElements = driver.findElement(
+				memberIdDropdown).findElements(By.xpath(".//li"));
 		for (WebElement element : memberIDDropdownElements) {
-				if (element.getText().contains(MemberID)) {
-					element.click();
-					break;
-				}
+			if (element.getText().equals(MemberID)) {
+				assertEquals(element.getText(), MemberID);
+				element.click();
+				break;
+			}
 		}
-	}
-	
-	public void PerformAddMultipleAccounts(String NoofAccounts, String Account, String Amount)
-			throws InterruptedException {
+
+		// PerformAddMultipleAccounts
+
+		assertNotEquals(NoofAccounts, "");
+		driver.findElement(noofaccounts).clear();
 		driver.findElement(noofaccounts).sendKeys(NoofAccounts);
 		int max = Integer.parseInt(NoofAccounts);
+		Thread.sleep(2000);
+		int amountsum = 0;
+		driver.findElement(noofaccountsshow).click();
+		Thread.sleep(2000);
+		if (max == 0) {
+			driver.findElement(accountshowclose).click();
+			Thread.sleep(2000);
+		} else {
+			String[] array1 = Account.split("#", max);
+			String[] array2 = Amount.split("#", max);
+
+			for (int i = 0; i < max; i++) {
+				if (array1[i].equals("") || array2[i].equals("")) {
+					driver.findElement(accountshowclose).click();
+					assertEquals(array1[i], "");
+					assertEquals(array2[i], "");
+				} else {
+					amountsum += Integer.parseInt(array2[i]);
+					driver.findElement(
+							By.cssSelector("#select_" + (i + 2)
+									+ "_chosen > a > span")).click();
+					driver.findElement(
+							By.cssSelector("#select_"
+									+ (i + 2)
+									+ "_chosen > div > div > input[type='text']"))
+							.sendKeys(array1[i] + Keys.ENTER);
+					driver.findElement(By.cssSelector("#input_" + (i + 2) + ""))
+							.sendKeys(array2[i]);
+					Thread.sleep(3000);
+				}
+			}
+			driver.findElement(accountdonebutton).click();
+			Thread.sleep(2000);
+		}
+		int amount1 = Integer.parseInt(driver.findElement(amount).getAttribute(
+				"value"));
+		System.out.println("amount field: " + amount1);
+		assertEquals(amountsum, amount1);
+		System.out.println("PASS");
+
+	}
+
+	public void TestCasePerformMultipleTransaction(String MemberID,
+			String NoofAccounts, String Account, String Amount,
+			String AccountNo, String TransactionType, String InstrumentType,
+			String ChequeNo, String Charges, String TransactionCode,
+			String Amount1) throws Exception {
+
+		assertNotEquals(MemberID, "");
+
+		// enter Member ID
+		Thread.sleep(2000);
+		driver.findElement(this.MemberID).click();
+		List<WebElement> memberIDDropdownElements = driver.findElement(
+				memberIdDropdown).findElements(By.xpath(".//li"));
+		for (WebElement element : memberIDDropdownElements) {
+			if (element.getText().equals(MemberID)) {
+				assertEquals(element.getText(), MemberID);
+				element.click();
+				break;
+			}
+		}
+
+		// PerformAddMultipleAccounts
+
+		assertNotEquals(NoofAccounts, "");
+		driver.findElement(noofaccounts).clear();
+		driver.findElement(noofaccounts).sendKeys(NoofAccounts);
+		int max = Integer.parseInt(NoofAccounts);
+		int amountsum = 0;
 		Thread.sleep(2000);
 		driver.findElement(noofaccountsshow).click();
 		Thread.sleep(2000);
 		if (max == 0) {
 			driver.findElement(accountshowclose).click();
 			Thread.sleep(2000);
-		}
-		else {
+		} else {
 			String[] array1 = Account.split("#", max);
 			String[] array2 = Amount.split("#", max);
 			for (int i = 0; i < max; i++) {
-				amountsum += Integer.parseInt(array2[i]);
-				driver.findElement(By.cssSelector("#select_" + (i + 2)+ "_chosen > a > span")).click();
-				driver.findElement(By.cssSelector("#select_" + (i + 2)+ "_chosen > div > div > input[type='text']")).sendKeys(array1[i] + Keys.ENTER);
-				driver.findElement(By.cssSelector("#input_" + (i + 2) + "")).sendKeys(array2[i]);
-				Thread.sleep(3000);
+
+				if (array1[i].equals("") || array2[i].equals("")) {
+					driver.findElement(accountshowclose).click();
+					assertEquals(array1[i], "");
+					assertEquals(array2[i], "");
+				} else {
+
+					amountsum += Integer.parseInt(array2[i]);
+
+					driver.findElement(
+							By.cssSelector("#select_" + (i + 2)
+									+ "_chosen > a > span")).click();
+					driver.findElement(
+							By.cssSelector("#select_"
+									+ (i + 2)
+									+ "_chosen > div > div > input[type='text']"))
+							.sendKeys(array1[i] + Keys.ENTER);
+					driver.findElement(By.cssSelector("#input_" + (i + 2) + ""))
+							.sendKeys(array2[i]);
+					Thread.sleep(3000);
+				}
 			}
 			driver.findElement(accountdonebutton).click();
 			Thread.sleep(2000);
 		}
-		  int amount1=Integer.parseInt(driver.findElement(amount).getAttribute("value"));
-		  System.out.println("amount field: "+amount1); 
-		  assertEquals(amountsum, amount1);
-		  System.out.println("PASS");
-		  amountsum=0;
-	}
-	
-	
-	public void performMultipleAccountsTransaction(String memberID,String NoofAccounts, String Account, String Amount,  String accountNumber,
-			String transactionType, String instrumentType, String chequeno,
-			String charges, String transactionCode, String amount) throws InterruptedException{
-		
-		
-performMemberID(memberID);
-		
-		PerformAddMultipleAccounts(NoofAccounts,Account,Amount);
-		performAddAccountNo(accountNumber); 
-		performTransactionType(transactionType);
-		performInstrumentType(instrumentType, chequeno);
-		performTransactionCode(transactionCode);
-		performSubmitandGenerateVoucher();
-		
-		
-	}
-	
-	
-	public void performAddAccountNo(String AccountNo) throws InterruptedException {
+		int amount1 = Integer.parseInt(driver.findElement(amount).getAttribute(
+				"value"));
+		System.out.println("amount field: " + amount1);
+		assertEquals(amountsum, amount1);
+		System.out.println("PASS");
+		amountsum = 0;
+
+		// performAddAccountNo
+		assertNotEquals(AccountNo, "");
 		Thread.sleep(2000);
 		driver.findElement(accountNumber).click();
-		List<WebElement> accountNumberDropdownElements = driver.findElement(accountNumberDropdown).findElements(By.xpath(".//li"));
+		List<WebElement> accountNumberDropdownElements = driver.findElement(
+				accountNumberDropdown).findElements(By.xpath(".//li"));
 		for (WebElement element : accountNumberDropdownElements) {
-				if (element.getText().contains(AccountNo)) {
-					element.click();
-					// record(1);
-					break;
-				}
+			if (element.getText().equals(AccountNo)) {
+				assertEquals(element.getText(), AccountNo);
+				element.click();
+				// record(1);
+				break;
+			}
 		}
-	}
-	
-	
-	public void performTransactionType(String TransactionType) {
+
+		// performTransactionType
+
 		driver.findElement(transactionType).click();
-		List<WebElement> transactionTypeDropdownElements = driver.findElement(transactionTypeDropdown).findElements(By.xpath(".//li"));
+		List<WebElement> transactionTypeDropdownElements = driver.findElement(
+				transactionTypeDropdown).findElements(By.xpath(".//li"));
 		for (WebElement element : transactionTypeDropdownElements) {
-				if (element.getText().contains(TransactionType)) {
-					element.click();
-					break;
-				}
-		}
-	}
-	
-	
-	public void performInstrumentType(String InstrumentType,String ChequeNo) throws InterruptedException {
-		driver.findElement(instrumentType).click();
-		List<WebElement> instrumentTypeDropdownElements = driver.findElement(instrumentTypeDropdown).findElements(By.xpath(".//li"));
-		for (WebElement element : instrumentTypeDropdownElements) {
-			if (element.getText().contains(InstrumentType)) {
+			if (element.getText().equals(TransactionType)) {
 				element.click();
 				break;
 			}
 		}
-		if(driver.findElement(instrumentType).getText().equalsIgnoreCase("cheque")){
+
+		// performInstrumentType
+
+		driver.findElement(instrumentType).click();
+		List<WebElement> instrumentTypeDropdownElements = driver.findElement(
+				instrumentTypeDropdown).findElements(By.xpath(".//li"));
+		for (WebElement element : instrumentTypeDropdownElements) {
+			if (element.getText().equals(InstrumentType)) {
+				element.click();
+				break;
+			}
+		}
+		if (driver.findElement(instrumentType).getText()
+				.equalsIgnoreCase("cheque")) {
 			Thread.sleep(3000);
 			WebDriverWait wait = new WebDriverWait(driver, 3000);
-			WebElement we = wait.until(ExpectedConditions.visibilityOfElementLocated(this.chequeno));
+			WebElement we = wait.until(ExpectedConditions
+					.visibilityOfElementLocated(this.chequeno));
 			we.sendKeys(ChequeNo);
 			Thread.sleep(3000);
 		}
-	}
-	
-	
-	public void performTransactionCode(String TransactionCode) {
+
+		// performTransactionCode
+
 		driver.findElement(transactionCode).click();
-		List<WebElement> transactionCodeDropdownElements = driver.findElement(transactionCodeDropdown).findElements(	By.xpath(".//li"));
+		List<WebElement> transactionCodeDropdownElements = driver.findElement(
+				transactionCodeDropdown).findElements(By.xpath(".//li"));
 		for (WebElement element : transactionCodeDropdownElements) {
-				if (element.getText().contains(TransactionCode)) {
-					element.click();
-					break;
-				}
+			if (element.getText().equals(TransactionCode)) {
+				element.click();
+				break;
+			}
 		}
-	}
-	
-	
-	public void performSubmitandGenerateVoucher() {
-		driver.findElement(submitButton).click();
-		WebDriverWait wait = new WebDriverWait(driver, 3000);
-		WebElement we = wait.until(ExpectedConditions.visibilityOfElementLocated(voucherlink));
-		assertEquals(we.getText(), "Click Here To Generate Voucher For Previous Transaction");
-		if(we.getText().contains("Generate Voucher")){
-			System.out.println(we.getText());
-			we.click();	
+
+		// performSubmitandGenerateVoucher
+
+		if (driver.getTitle().equals("JBoss Web/7.0.13.Final - Error report"))
+			driver.navigate().back();
+
+		else {
+
+			System.out.println("Transaction voucher check started");
+
+			WebDriverWait wait = new WebDriverWait(driver, 3000);
+			WebElement we = wait.until(ExpectedConditions
+					.visibilityOfElementLocated(voucherlink));
+			assertEquals(we.getText(),
+					"Click Here To Generate Voucher For Previous Transaction");
+			if (we.getText().contains("Generate Voucher")) {
+				System.out.println(we.getText());
+				we.click();
+			} else {
+
+				System.out.println("Transaction failed");
+				System.out.println(we.getText());
+			}
+			System.out.println("Transaction voucher check executed");
 		}
-		else{
-			System.out.println(we.getText());
-		}
-	}
-	
-	
-	
-	public void TestCaseAddMultipleAccounts(String MemberID,String NoofAccounts,String Account,String Amount) throws Exception {
-		//navigate();
-		performMemberID(MemberID);
-		//peformPhotoandSignature();
-		PerformAddMultipleAccounts(NoofAccounts,Account,Amount);
-	}
-	
-	
-	
-	public void TestCasePerformMultipleTransaction(String MemberID,String NoofAccounts,String Account,String Amount,String AccountNo,String TransactionType,String InstrumentType,String ChequeNo,String TransactionCode) throws Exception {
-		
-		performMemberID(MemberID);
-		
-		PerformAddMultipleAccounts(NoofAccounts,Account,Amount);
-		performAddAccountNo(AccountNo); 
-		performTransactionType(TransactionType);
-		performInstrumentType(InstrumentType, ChequeNo);
-		performTransactionCode(TransactionCode);
-		performSubmitandGenerateVoucher();
-	}
-	
-	
+		/*
+		 * ArrayList<String> tabs2 = new ArrayList<String>
+		 * (driver.getWindowHandles()); driver.switchTo().window(tabs2.get(1));
+		 * Thread.sleep(5000); driver.close();
+		 * driver.switchTo().window(tabs2.get(0)); Thread.sleep(2000);
+		 */
+
+	}// end of test case
 }

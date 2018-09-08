@@ -1,9 +1,5 @@
-package scripts;
+package scripts.transaction;
 
-/**
- * @author Neeraj
- *
- */
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,6 +16,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+//import selenium.webdriver.chrome.options 
+
 public class TransactionEntrySingleAccountScenario {
 
 	WebDriver driver;
@@ -28,7 +26,7 @@ public class TransactionEntrySingleAccountScenario {
 	// @SuppressWarnings("deprecation")
 	public static String[][] getExcelData(String fileName, String sheetName)
 			throws IOException {
-	
+
 		String[][] arrayExcelData = null;
 		Workbook wb = null;
 		try {
@@ -58,64 +56,96 @@ public class TransactionEntrySingleAccountScenario {
 			System.out.println("error in getExcelData()");
 		}
 		return arrayExcelData;
-	
+
 	}
 
 	@DataProvider(name = "DP1")
 	public Object[][] createData1() throws IOException {
-	
+
 		Object[][] retObjArr = getExcelData(
-				"test\\resources\\data\\Transaction.xlsx", "SingleAccount");	
+				"test\\resources\\data\\Transaction.xlsx", "Transaction");
 		return (retObjArr);
-	
+
 	}
 
 	@BeforeClass
 	public void setUp() {
 
 		pom = new TransactionEntryPOM(driver, "chrome");
+		/*
+		 * SoftPACLoginLogoutPOM loginlogout= new SoftPACLoginLogoutPOM(driver);
+		 * loginlogout.login();
+		 */
 		pom.login();
 		pom.transactionEntry();
 
 	}
 
 	@Test(dataProvider = "DP1", priority = 0)
-	public void viewPhotoSignature(String memberID,String noofaccounts, String accounts,String amounts, String accountNumber,
-			String transactionType, String instrumentType,String chequeno, String charges,
-			String transactionCode, String amount) {
-		
+	public void viewPhotoSignature(String memberID, String noofaccounts,
+			String accounts, String amounts, String accountNumber,
+			String transactionType, String instrumentType, String chequeno,
+			String charges, String transactionCode, String amount) {
+
 		try {
 			pom.viewPhotoSignature(memberID);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	
+
 	}
 
 	@Test(dataProvider = "DP1", priority = 1)
-	public void singleAccountTransaction(String memberID,String noofaccounts, String accounts,String amounts, String accountNumber,
-			String transactionType, String instrumentType,String chequeno, String charges,
-			String transactionCode, String amount) {
-		
-		pom.performSingleAccountTransaction(memberID, accountNumber, transactionType,
-				instrumentType,chequeno,charges, transactionCode, amount);
-			
+	public void singleAccountTransaction(String memberID, String noofaccounts,
+			String accounts, String amounts, String accountNumber,
+			String transactionType, String instrumentType, String chequeno,
+			String charges, String transactionCode, String amount) {
+
+		pom.performSingleAccountTransaction(memberID, accountNumber,
+				transactionType, instrumentType, chequeno, charges,
+				transactionCode, amount);
 
 	}
 
-
 	@Test(dataProvider = "DP1", priority = 2)
-	public void accountNumberCheckAllAutofields(String memberID, String accountNumber,
-			String transactionType, String instrumentType,String chequeno, String charges,
+	public void accountNumberCheckAllAutofields(String memberID,
+			String noofaccounts, String accounts, String amounts,
+			String accountNumber, String transactionType,
+			String instrumentType, String chequeno, String charges,
 			String transactionCode, String amount) {
 		pom.selectAccountNumber(memberID, accountNumber);
 	}
 
+	@Test(dataProvider = "DP1", priority = 3)
+	public void checkChargesAmountUpdate(String memberID, String noofaccounts,
+			String accounts, String amounts, String accountNumber,
+			String transactionType, String instrumentType, String chequeno,
+			String charges, String transactionCode, String amount) {
+		pom.checkChargesAmountUpdate(memberID, noofaccounts, accounts, amounts,
+				accountNumber, transactionType, instrumentType, chequeno,
+				charges, transactionCode, amount);
+	}
+
+	@Test(dataProvider = "DP1", priority = 3)
+	public void checkAmountEditableCharges(String memberID,
+			String noofaccounts, String accounts, String amounts,
+			String accountNumber, String transactionType,
+			String instrumentType, String chequeno, String charges,
+			String transactionCode, String amount) {
+		pom.checkAmountEditableCharges(memberID, accountNumber,
+				transactionType, instrumentType, chequeno, charges,
+				transactionCode, amount);
+	}
+
 	@AfterClass
 	public void turnDown() {
-		driver=pom.returnDriver();
+		driver = pom.returnDriver();
 		pom.logout();
 		driver.close();
+		/*
+		 * SoftPACLoginLogoutPOM loginlogout= new SoftPACLoginLogoutPOM(driver);
+		 * loginlogout.logout();
+		 */
 	}
 }
